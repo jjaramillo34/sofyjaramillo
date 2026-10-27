@@ -48,6 +48,11 @@ export async function POST(request: Request) {
 
   // Only real artworks can collect likes.
   const artworks = await getArtworks("en");
+  if (artworks.length === 0) {
+    // Content didn't load: a deployment problem, not a bad request. Say so in the logs.
+    console.error("[likes] No artworks found; is content/ included in the deployment?");
+    return NextResponse.json<LikesPostResponse>({ ok: false, error: "unavailable" }, { status: 503 });
+  }
   if (!artworks.some((artwork) => artwork.slug === slug)) {
     return NextResponse.json<LikesPostResponse>({ ok: false, error: "not_found" }, { status: 404 });
   }

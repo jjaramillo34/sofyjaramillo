@@ -7,11 +7,14 @@ export const VISITOR_COOKIE = "sofy_vid";
 export const VISITOR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 2;
 
 /**
- * Likes from one network (a home, a school) per artwork. High enough for a
- * family or classroom on shared wifi, low enough that clearing cookies in a
- * loop can't inflate a count.
+ * Likes from one network per artwork per day. Mobile carriers put many phones
+ * behind a few shared IPs (carrier-grade NAT, common in Ecuador), so this has
+ * to allow lots of real people on one address while still stopping someone
+ * clearing cookies in a loop. The visitor cookie already limits each browser
+ * to one like per piece.
  */
-const MAX_LIKES_PER_NETWORK = 15;
+const MAX_LIKES_PER_NETWORK_PER_DAY = 60;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type LikeSummary = {
   counts: Record<string, number>;
@@ -60,8 +63,12 @@ export async function setLike(
   if (liked) {
     const alreadyLiked = await ArtworkLikeModel.exists({ artwork, visitor });
     if (!alreadyLiked) {
-      const fromNetwork = await ArtworkLikeModel.countDocuments({ artwork, network });
-      if (fromNetwork >= MAX_LIKES_PER_NETWORK) return { error: "rate_limited" };
+      const fromNetworkToday = await ArtworkLikeModel.countDocuments({
+        artwork,
+        network,
+        createdAt: { $gte: new Date(Date.now() - DAY_MS) },
+      });
+      if (fromNetworkToday >= MAX_LIKES_PER_NETWORK_PER_DAY) return { error: "rate_limited" };
       try {
         await ArtworkLikeModel.create({ artwork, visitor, network });
       } catch (error) {

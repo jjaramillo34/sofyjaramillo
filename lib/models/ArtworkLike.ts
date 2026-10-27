@@ -16,8 +16,8 @@ const artworkLikeSchema = new Schema(
 
 // One like per visitor per artwork; also serves "which pieces has this visitor liked?".
 artworkLikeSchema.index({ visitor: 1, artwork: 1 }, { unique: true });
-// Counting likes per artwork, and per network for the abuse cap.
-artworkLikeSchema.index({ artwork: 1, network: 1 });
+// Counting likes per artwork, and per network per day for the abuse cap.
+artworkLikeSchema.index({ artwork: 1, network: 1, createdAt: -1 });
 
 export type ArtworkLike = InferSchemaType<typeof artworkLikeSchema>;
 

@@ -129,7 +129,8 @@ with "reduce motion" turned on.
   plus what this visitor liked. Stored in MongoDB `artwork_likes`, one document per like, with a
   unique index on (visitor, artwork).
 - A visitor is a random id in the httpOnly `sofy_vid` cookie. To stop cookie-clearing spam, each
-  network (salted IP hash, `LIKES_SALT`) can add at most 15 likes per artwork. Without
+  network (salted IP hash, `LIKES_SALT`) can add at most 60 likes per artwork per day (mobile
+  carriers share IPs across many phones). Without
   `MONGODB_URI` the like buttons simply don't appear.
 - Each piece has its own page, `/[lang]/gallery/[slug]`: the gallery with that piece open, with its
   own title, description and preview image (`app/[lang]/gallery/[slug]/opengraph-image.tsx`).

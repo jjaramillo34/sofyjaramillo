@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
   // OAuth callback host); without this, the dev server blocks hot reload there.
   // Development only, and the same machine.
   allowedDevOrigins: ["127.0.0.1"],
+  // Keystatic's reader loads content/ from disk at runtime, which build tracing
+  // can't see, so serverless functions on Vercel shipped without it: the likes
+  // API then found no artworks and rejected every like. Ship it everywhere,
+  // plus the share-card assets for the Open Graph image routes.
+  outputFileTracingIncludes: {
+    "/**": ["./content/**/*"],
+    "/**/opengraph-image": ["./assets/**/*"],
+  },
   experimental: {
     // Without this, a server component that imports from the Once UI package
     // root ships about 110 kB of extra JavaScript on every route.
