@@ -9,9 +9,22 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^6.0.0",
+    "@keystatic/core": "^0.6.9",
+    "@keystatic/next": "^5.0.5",
+    "@once-ui-system/core": "^2.5.0",
+    "@vercel/blob": "^2.8.2",
+    "lucide-react": "^1.61.0",
+    "mongoose": "^9.11.4",
     "next": "16.4.3",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "react-hook-form": "^7.90.0",
+    "resend": "^6.34.1",
+    "sass": "^1.106.1",
+    "sharp": "^0.35.5",
+    "simple-icons": "^16.35.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
@@ -22,5 +35,8 @@
     "eslint-config-next": "16.4.3",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "zod": "$zod"
   }
 }

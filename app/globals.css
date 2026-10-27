@@ -1,26 +1,678 @@
-@import "tailwindcss";
+/*
+ * Once UI owns the base styles, tokens and components. Tailwind is loaded
+ * without its preflight reset, as a utilities layer for atmospheric accents
+ * only, so it never fights Once UI's own CSS.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
 
+/* ───────────────────────── Motion ─────────────────────────
+ * --ease-paint: a quick start that settles slowly, like a brush lifting off.
+ * Everything below is switched off under prefers-reduced-motion.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ease-paint: cubic-bezier(0.2, 0.75, 0.2, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise, 0.55em));
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes fade-down {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes draw-stroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  30% {
+    transform: rotate(-12deg) scale(1.08);
+  }
+  60% {
+    transform: rotate(8deg) scale(1.08);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* One-shot entrance for any element: set --delay inline to stagger. */
+.anim-rise {
+  animation: rise-in 0.9s var(--ease-paint) both;
+  animation-delay: var(--delay, 0ms);
+}
+.anim-fade-down {
+  animation: fade-down 0.7s var(--ease-paint) both;
+}
+
+/* SectionTitle: each word rises in, then a gold brushstroke draws under the highlight. */
+.st-word {
+  display: inline-block;
+}
+.st-highlight {
+  position: relative;
+  display: inline-block;
+}
+.st-stroke {
+  position: absolute;
+  left: -4%;
+  bottom: -0.12em;
+  width: 108%;
+  height: 0.42em;
+  overflow: visible;
+  pointer-events: none;
+  z-index: -1;
+}
+.st-stroke path {
+  stroke: var(--accent-on-background-medium);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+[data-st-state="hidden"] .st-word,
+[data-st-state="hidden"] .st-after {
+  opacity: 0;
+}
+[data-st-state="play"] .st-word {
+  animation: rise-in 0.85s var(--ease-paint) both;
+  animation-delay: calc(var(--i) * 65ms + var(--base, 0ms));
+}
+[data-st-state="play"] .st-stroke path {
+  animation: draw-stroke 0.9s var(--ease-paint) forwards;
+  animation-delay: calc(var(--i) * 65ms + var(--base, 0ms) + 350ms);
+}
+[data-st-state="play"] .st-after {
+  animation: rise-in 0.9s var(--ease-paint) both;
+  animation-delay: var(--after, 400ms);
+}
+
+/* Cards that lift on hover; an inner .wiggle icon gets a playful nudge. */
+.lift {
+  transition:
+    transform 450ms var(--ease-paint),
+    box-shadow 450ms var(--ease-paint),
+    border-color 450ms var(--ease-paint);
+}
+.lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px -18px var(--brand-alpha-strong);
+}
+.lift:hover .wiggle {
+  animation: wiggle 0.7s var(--ease-paint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-rise,
+  .anim-fade-down,
+  [data-st-state] .st-word,
+  [data-st-state] .st-after {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  [data-st-state] .st-stroke path {
+    animation: none !important;
+    stroke-dashoffset: 0;
+  }
+  .lift,
+  .lift:hover {
+    transition: none;
+    transform: none;
+  }
+  .lift:hover .wiggle {
+    animation: none;
+  }
+}
+
+/* Reset for native buttons used as accessible wrappers around artwork thumbnails. */
+.art-trigger {
+  all: unset;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  border-radius: var(--radius-l);
+}
+.art-trigger:focus-visible {
+  outline: 2px solid var(--brand-border-strong);
+  outline-offset: 4px;
+}
+.art-trigger img {
+  transition: transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.art-trigger:hover img {
+  transform: scale(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .art-trigger img {
+    transition: none;
+  }
+}
+
+/* Keeps the SectionTitle brushstroke behind its word but above the page. */
+.st-highlight {
+  isolation: isolate;
+}
+.st-stroke path {
+  stroke-width: 0.16em;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ───────────────────── Likes ───────────────────── */
+.art-card {
+  position: relative;
+}
+.like-button {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  color: var(--neutral-on-background-strong);
+  transition:
+    transform 200ms var(--ease-paint),
+    background 200ms var(--ease-paint);
+}
+.like-button:focus-visible {
+  outline: 2px solid var(--brand-border-strong);
+  outline-offset: 2px;
+}
+.like-button:active {
+  transform: scale(0.94);
+}
+.like-button[aria-pressed="true"] .like-heart {
+  color: #e8475f;
+}
+.like-heart {
+  display: inline-flex;
+  font-size: 20px;
+}
+/* Floating over a thumbnail, top right of the image. */
+.like-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  padding: 6px 12px 6px 10px;
+  background: var(--page-background);
+  background: color-mix(in srgb, var(--page-background) 78%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--neutral-alpha-medium);
+}
+.like-overlay:hover {
+  background: var(--page-background);
+}
+.like-inline {
+  padding: 6px 14px 6px 12px;
+  border: 1px solid var(--neutral-alpha-medium);
+}
+.like-inline:hover {
+  background: var(--neutral-alpha-weak);
+}
+.like-pop {
+  animation: like-pop 520ms var(--ease-paint);
+}
+@keyframes like-pop {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.45);
+  }
+  60% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .like-pop {
+    animation: none;
+  }
+  .like-button {
+    transition: none;
+  }
+}
+
+/* ───────────────────── Love stats ─────────────────────
+ * Numbers painted with a slowly drifting Starry Night gradient: night blues,
+ * sky blue and sunflower gold. --shift offsets each number so no two match.
+ */
+.starry-count {
+  background: linear-gradient(
+    100deg,
+    #6890e0 0%,
+    #9cb8f0 18%,
+    #ffd84a 36%,
+    #f5a623 50%,
+    #4470d0 68%,
+    #6890e0 100%
+  );
+  background-size: 300% 100%;
+  background-position: calc(var(--shift, 0) * 35%) 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-variant-numeric: tabular-nums;
+  animation: starry-shift 9s linear infinite;
+  animation-delay: calc(var(--shift, 0) * -3s);
+}
+.starry-count * {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+/* PaintedCount: white while counting, then the gradient layer is brushed in. */
+.painted-count {
+  position: relative;
+  display: inline-grid;
+  justify-items: center;
+}
+/* Both layers stack in one grid cell. Sizes are set on the number text in each
+   layer (CountFx wraps it), so the white and coloured digits line up exactly. */
+.painted-count > * {
+  grid-area: 1 / 1;
+}
+.painted-base,
+.painted-count .starry-count {
+  font-variant-numeric: tabular-nums;
+}
+.painted-count:not(.painted-count-small) .painted-base,
+.painted-count:not(.painted-count-small) .starry-count {
+  font-size: clamp(3.5rem, 7vw, 5.5rem);
+  line-height: 1;
+}
+.painted-base {
+  color: #f4f1ea;
+  transition: opacity 400ms ease 700ms;
+}
+.painted-color {
+  display: flex;
+  clip-path: inset(-25% 100% -25% -5%);
+  transition: clip-path 900ms var(--ease-paint);
+}
+.painted-count[data-painted="true"] .painted-color {
+  clip-path: inset(-25% -5% -25% -5%);
+}
+.painted-count[data-painted="true"] .painted-base {
+  opacity: 0;
+}
+.painted-count[data-painted="true"] {
+  animation: painted-glow 1400ms var(--ease-paint);
+}
+@keyframes painted-glow {
+  0% {
+    filter: none;
+    transform: scale(1);
+  }
+  35% {
+    filter: drop-shadow(0 0 22px rgb(255 216 74 / 0.75));
+    transform: scale(1.08);
+  }
+  100% {
+    filter: none;
+    transform: scale(1);
+  }
+}
+@keyframes starry-shift {
+  to {
+    background-position: 300% 50%;
+  }
+}
+
+/* Always a night sky, like the hero (fixed palette, not theme tokens). */
+.love-panel {
+  background: linear-gradient(160deg, #081338 0%, #12286a 60%, #1d3b8c 100%);
+}
+
+/* Grid items default to min-width: auto, so the one-line "most loved" title
+   would widen the grid past the panel on phones; let them shrink instead. */
+.love-grid > * {
+  min-width: 0;
+}
+
+.love-top {
+  display: block;
+  text-decoration: none;
+  border-radius: var(--radius-l);
+  transition: transform 400ms var(--ease-paint);
+}
+.love-top:hover {
+  transform: translateY(-4px);
+}
+.love-top:focus-visible {
+  outline: 2px solid var(--accent-border-strong);
+  outline-offset: 3px;
+}
+
+.love-star {
+  position: absolute;
+  border-radius: 50%;
+  background: #ffd84a;
+  box-shadow: 0 0 12px 4px rgb(255 216 74 / 0.5);
+  animation: love-twinkle 3.4s ease-in-out infinite;
+}
+@keyframes love-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.love-heart-beat {
+  display: inline-block;
+  font-size: 4rem;
+  line-height: 1;
+  color: #e8475f;
+  filter: drop-shadow(0 0 18px rgb(232 71 95 / 0.55));
+  animation: love-beat 1.6s ease-in-out infinite;
+}
+@keyframes love-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.18);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .painted-color,
+  .painted-base {
+    transition: none;
+  }
+  .painted-count[data-painted] {
+    animation: none;
+  }
+  .starry-count,
+  .love-star,
+  .love-heart-beat {
+    animation: none;
+  }
+  .love-top,
+  .love-top:hover {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Polaroid frame for the studio video: tilted, taped, straightens on hover. */
+.polaroid {
+  width: min(320px, 78vw);
+  transform: rotate(-2.5deg);
+  transition: transform 600ms var(--ease-paint);
+}
+.polaroid:hover,
+.polaroid:focus-within {
+  transform: rotate(0deg) scale(1.02);
+}
+.polaroid-tape {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 96px;
+  height: 26px;
+  transform: translateX(-50%) rotate(3deg);
+  background: var(--accent-alpha-medium);
+  border-radius: 2px;
+  z-index: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .polaroid,
+  .polaroid:hover,
+  .polaroid:focus-within {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ───────────────────── Starry Night hero ─────────────────────
+ * Scene: components/StarryNight.tsx. The wrapper (.starry) fills the hero;
+ * SkyMotion sets data-paused off screen and --sky-x/--sky-y for parallax.
+ */
+.starry {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.starry svg {
+  display: block;
+}
+.starry[data-paused="true"] * {
+  animation-play-state: paused !important;
+}
+
+/* Parallax: deeper layers drift less than near ones. */
+.sn-depth-1,
+.sn-depth-2,
+.sn-depth-3 {
+  transition: transform 900ms var(--ease-paint);
+}
+.sn-depth-1 {
+  transform: translate(calc(var(--sky-x, 0) * -8px), calc(var(--sky-y, 0) * -5px));
+}
+.sn-depth-2 {
+  transform: translate(calc(var(--sky-x, 0) * -18px), calc(var(--sky-y, 0) * -10px));
+}
+.sn-depth-3 {
+  transform: translate(calc(var(--sky-x, 0) * -30px), calc(var(--sky-y, 0) * -6px));
+}
+
+/* The wind: dashes travel along the swirl path. Offsets are whole dash periods, so it loops seamlessly. */
+.sn-wind-a {
+  stroke-dasharray: 46 20;
+  animation: sn-flow-a 10s linear infinite;
+}
+.sn-wind-b {
+  stroke-dasharray: 14 22;
+  animation: sn-flow-b 16s linear infinite;
+}
+@keyframes sn-flow-a {
+  to {
+    stroke-dashoffset: -660;
+  }
+}
+@keyframes sn-flow-b {
+  to {
+    stroke-dashoffset: -720;
+  }
+}
+
+/* Stars and moon: rings turn, halos breathe, cores twinkle. */
+.sn-ring,
+.sn-halo,
+.sn-cypress {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.sn-ring {
+  animation: sn-spin 48s linear infinite;
+}
+.sn-ring-reverse {
+  animation-duration: 70s;
+  animation-direction: reverse;
+}
+.sn-halo {
+  animation: sn-breathe 5.5s ease-in-out infinite;
+}
+.sn-halo-slow {
+  animation-duration: 8s;
+}
+.sn-twinkle {
+  animation: sn-twinkle 3.2s ease-in-out infinite;
+}
+@keyframes sn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes sn-breathe {
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+@keyframes sn-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.35;
+  }
+}
+
+/* Lanterns drift up from the village, swaying, and fade out high in the sky. */
+.sn-lantern {
+  animation: sn-rise var(--dur, 30s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+.sn-lantern-sway {
+  animation: sn-sway 6s ease-in-out infinite alternate;
+}
+@keyframes sn-rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-640px);
+    opacity: 0;
+  }
+}
+@keyframes sn-sway {
+  from {
+    transform: translateX(calc(var(--sway, 12px) * -1));
+  }
+  to {
+    transform: translateX(var(--sway, 12px));
+  }
+}
+
+/* Village windows flicker like candlelight; the cypress sways from its base. */
+.sn-window {
+  animation: sn-flicker 6s steps(1, end) infinite;
+}
+@keyframes sn-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  12% {
+    opacity: 0.7;
+  }
+  14% {
+    opacity: 1;
+  }
+  63% {
+    opacity: 0.8;
+  }
+  66% {
+    opacity: 1;
+  }
+}
+.sn-cypress {
+  transform-origin: 50% 100%;
+  animation: sn-cypress 9s ease-in-out infinite alternate;
+}
+@keyframes sn-cypress {
+  from {
+    transform: rotate(-1.2deg);
+  }
+  to {
+    transform: rotate(1.2deg);
+  }
+}
+
+/* Keeps the hero text readable over the sky. */
+.starry-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 50% 46% at 50% 48%, rgb(4 9 30 / 0.78), rgb(4 9 30 / 0.4) 60%, transparent 78%),
+    linear-gradient(to bottom, rgb(4 9 30 / 0.35), transparent 30%);
+}
+.hero-copy h1,
+.hero-copy p {
+  text-shadow:
+    0 1px 2px rgb(4 9 30 / 0.8),
+    0 2px 24px rgb(4 9 30 / 0.9);
+}
+
+@media (max-width: 768px) {
+  .sn-wide {
+    display: none;
+  }
+  /* On phones the text covers most of the sky, so the scrim spans it. */
+  .starry-scrim {
+    background: linear-gradient(
+      to bottom,
+      rgb(4 9 30 / 0.35),
+      rgb(4 9 30 / 0.6) 30%,
+      rgb(4 9 30 / 0.6) 72%,
+      transparent 92%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .starry * {
+    animation: none !important;
+  }
+  .sn-depth-1,
+  .sn-depth-2,
+  .sn-depth-3 {
+    transform: none;
+  }
+  /* Without the rise animation, lanterns rest just above the rooftops. */
+  .sn-lantern {
+    transform: translateY(-160px);
+  }
 }
