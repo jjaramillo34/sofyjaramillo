@@ -79,7 +79,7 @@ Reference images are uploaded to Vercel Blob as public files with unguessable UR
 1. Push to GitHub and import the repo in Vercel.
 2. Add env vars from `.env.example`, and connect a Blob store (Storage tab).
 3. In MongoDB Atlas, allow Vercel's egress under Network Access (`0.0.0.0/0`, or use the Atlas Vercel integration).
-4. For editing content in production, set `NEXT_PUBLIC_KEYSTATIC_GITHUB_REPO`, visit `/keystatic`, and follow the GitHub app setup.
+4. For editing content on the live site, follow [docs/keystatic-github-setup.md](docs/keystatic-github-setup.md).
 
 ## Notes
 
@@ -120,8 +120,8 @@ with "reduce motion" turned on.
   (1200×630 JPEG). It uses `assets/og/sky.jpg` (a still of the hero), `assets/og/starry-night-painting.jpg`
   (a 900 px copy of her painting) and the fonts in `assets/fonts/`. If the painting photo is
   replaced, refresh that copy, e.g. `sips -Z 900 -s format jpeg <photo> --out assets/og/starry-night-painting.jpg`.
-- Set `NEXT_PUBLIC_SITE_URL` to the final domain so preview links are absolute; on Vercel it
-  falls back to the project's production domain.
+- Preview and canonical links use https://www.sofyjaramillo.com (`lib/site.ts`). Locally,
+  `NEXT_PUBLIC_SITE_URL=http://localhost:3000` in `.env.local` points them at the dev server.
 
 ## Likes and sharing
 

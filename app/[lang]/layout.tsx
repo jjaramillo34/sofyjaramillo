@@ -12,7 +12,9 @@ import { Providers } from "@/components/Providers";
 import { getBio } from "@/lib/content";
 import { hasLocale, locales } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { siteUrl } from "@/lib/site";
 import { dataStyle, style } from "@/resources/once-ui.config";
+import { Analytics } from "@vercel/analytics/next"
 
 // A soft, expressive serif for headings; Geist keeps body copy and labels crisp.
 const heading = Fraunces({ variable: "--font-heading", subsets: ["latin"], display: "swap" });
@@ -22,17 +24,6 @@ const code = Geist_Mono({ variable: "--font-code", subsets: ["latin"], display: 
 
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
-}
-
-/**
- * Absolute base for canonical, hreflang and Open Graph image URLs. Uses
- * NEXT_PUBLIC_SITE_URL when set (the custom domain), otherwise Vercel's
- * production domain, so link previews work before a domain is attached.
- */
-function siteUrl() {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return new URL(process.env.NEXT_PUBLIC_SITE_URL);
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return new URL(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`);
-  return new URL("http://localhost:3000");
 }
 
 export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Promise<Metadata> {
@@ -78,6 +69,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       className={[heading.variable, body.variable, label.variable, code.variable].join(" ")}
     >
       <head>
+        <Analytics />
         {/* Sets data-theme and the color scheme before first paint. */}
         <ThemeInit config={style} dataStyle={dataStyle} />
       </head>
