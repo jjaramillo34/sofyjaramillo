@@ -16,7 +16,7 @@ import Link from "next/link";
 import type { IconName } from "@once-ui-system/core";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useSyncExternalStore } from "react";
-import { artworkCategories, type ArtworkCategory } from "@/keystatic.config";
+import { artworkCategories, type ArtworkCategory } from "@/lib/artwork-categories";
 import { ArtworkThumb } from "@/components/ArtworkThumb";
 import { LikeButton } from "@/components/Likes";
 import { Reveal } from "@/components/Reveal";

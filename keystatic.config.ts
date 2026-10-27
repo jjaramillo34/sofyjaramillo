@@ -1,7 +1,6 @@
 import { collection, config, fields, singleton } from "@keystatic/core";
 
-export const artworkCategories = ["paintings", "drawings", "wearables"] as const;
-export type ArtworkCategory = (typeof artworkCategories)[number];
+export { artworkCategories, type ArtworkCategory } from "@/lib/artwork-categories";
 
 // Local mode edits files on disk (great for `npm run dev`). Set
 // NEXT_PUBLIC_KEYSTATIC_GITHUB_REPO=owner/repo to edit through GitHub in production.

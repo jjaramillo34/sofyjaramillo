@@ -1,7 +1,8 @@
 import "server-only";
 import { createReader } from "@keystatic/core/reader";
 import { cacheLife, cacheTag } from "next/cache";
-import keystaticConfig, { type ArtworkCategory } from "@/keystatic.config";
+import keystaticConfig from "@/keystatic.config";
+import type { ArtworkCategory } from "@/lib/artwork-categories";
 import type { Locale } from "@/lib/i18n/config";
 
 const reader = createReader(process.cwd(), keystaticConfig);

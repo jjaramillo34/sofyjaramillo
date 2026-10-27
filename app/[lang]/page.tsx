@@ -8,7 +8,7 @@ import { Reveal } from "@/components/Reveal";
 import { SectionTitle } from "@/components/SectionTitle";
 import { StarryNight } from "@/components/StarryNight";
 import { StudioVideo } from "@/components/StudioVideo";
-import { artworkCategories } from "@/keystatic.config";
+import { artworkCategories } from "@/lib/artwork-categories";
 import { getArtworks, getBio } from "@/lib/content";
 import { hasLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
