@@ -179,7 +179,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
       {featured.length > 0 && (
         <Column fillWidth horizontal="center" paddingX="24">
           <Column maxWidth="l" gap="40">
-            <Row horizontal="between" vertical="end" gap="16" s={{ direction: "column", vertical: "start" }}>
+            <Row horizontal="between" vertical="end" gap="16" s={{ direction: "column", vertical: "start", horizontal: "start" }}>
               <SectionTitle
                 icon="sparkles"
                 eyebrow={dict.featured.eyebrow}

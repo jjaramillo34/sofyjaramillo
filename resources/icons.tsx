@@ -1,6 +1,7 @@
 import type { IconComponent } from "@once-ui-system/core";
 import {
   ArrowRight,
+  ArrowUp,
   ArrowUpRight,
   AtSign,
   Brush,
@@ -26,6 +27,7 @@ import {
   Link,
   Mail,
   MapPin,
+  Menu,
   MessageCircleHeart,
   MoonStar,
   Paintbrush,
@@ -81,6 +83,7 @@ function brand(icon: SimpleIcon): IconComponent {
 export const icons = {
   // Overrides of Once UI built-ins
   arrowRight: lucide(ArrowRight),
+  arrowUp: lucide(ArrowUp),
   arrowUpRight: lucide(ArrowUpRight),
   calendar: lucide(Calendar),
   check: lucide(Check),
@@ -98,6 +101,7 @@ export const icons = {
   image: lucide(ImageIcon),
   link: lucide(Link),
   mail: lucide(Mail),
+  menu: lucide(Menu),
   pause: lucide(Pause),
   person: lucide(User),
   play: lucide(Play),

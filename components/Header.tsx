@@ -1,10 +1,14 @@
 "use client";
 
-import { Flex, Icon, Row, Text, ToggleButton } from "@once-ui-system/core";
+import { Button, Column, Drawer, Icon, IconButton, Line, Row, Text, ToggleButton } from "@once-ui-system/core";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { LOCALE_COOKIE, locales, switchLocalePath, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
+
+/** Once UI's Drawer slide-out time (EXIT_MS in its source). */
+const DRAWER_EXIT_MS = 320;
 
 type HeaderProps = {
   lang: Locale;
@@ -13,6 +17,11 @@ type HeaderProps = {
 
 export function Header({ lang, nav }: HeaderProps) {
   const pathname = usePathname() ?? `/${lang}`;
+  const router = useRouter();
+  // The phone menu is open only on the page it was opened on, so following a
+  // link (or switching language) closes it without an effect.
+  const [menuPath, setMenuPath] = useState<string | null>(null);
+  const menuOpen = menuPath === pathname;
 
   const links = [
     { href: `/${lang}`, label: nav.home, icon: "home", exact: true },
@@ -36,15 +45,9 @@ export function Header({ lang, nav }: HeaderProps) {
       paddingY="12"
       background="page"
       borderBottom
-      s={{ paddingX: "16" }}
+      s={{ paddingX: "16", paddingY: "8" }}
     >
-      <Flex
-        maxWidth="l"
-        vertical="center"
-        horizontal="between"
-        gap="16"
-        s={{ direction: "column", gap: "8" }}
-      >
+      <Row maxWidth="l" vertical="center" horizontal="between" gap="16">
         <Link href={`/${lang}`} aria-label="Sofy Jaramillo — home" style={{ textDecoration: "none" }}>
           <Row vertical="center" gap="8">
             <SunflowerMark />
@@ -54,7 +57,8 @@ export function Header({ lang, nav }: HeaderProps) {
           </Row>
         </Link>
 
-        <Row vertical="center" gap="16" s={{ fillWidth: true, horizontal: "between" }}>
+        {/* Tablet and desktop: links and language inline */}
+        <Row vertical="center" gap="16" s={{ hide: true }}>
           <Row as="nav" aria-label={nav.menu} gap="4">
             {links.map((link) => {
               const active = isActive(link.href, link.exact);
@@ -71,37 +75,102 @@ export function Header({ lang, nav }: HeaderProps) {
               );
             })}
           </Row>
-
-          <Row
-            role="group"
-            aria-label={nav.language}
-            gap="2"
-            padding="2"
-            radius="full"
-            border
-            background="surface"
-            vertical="center"
-          >
-            <Row paddingLeft="8" paddingRight="4" aria-hidden="true" s={{ hide: true }}>
-              <Icon name="languages" size="xs" onBackground="neutral-weak" />
-            </Row>
-            {locales.map((locale) => (
-              <ToggleButton
-                key={locale}
-                href={switchLocalePath(pathname, locale)}
-                onClick={() => rememberLocale(locale)}
-                selected={locale === lang}
-                aria-current={locale === lang ? "true" : undefined}
-                lang={locale}
-                aria-label={locale === "en" ? "English" : "Español"}
-                size="s"
-                rounded
-                label={locale.toUpperCase()}
-              />
-            ))}
-          </Row>
+          <LanguageSwitch lang={lang} pathname={pathname} label={nav.language} />
         </Row>
-      </Flex>
+
+        {/* Phones: a menu button that opens the drawer */}
+        <Row hide s={{ hide: false }}>
+          <IconButton
+            icon="menu"
+            variant="secondary"
+            size="l"
+            ariaLabel={nav.openMenu}
+            aria-expanded={menuOpen}
+            aria-haspopup="dialog"
+            onClick={() => setMenuPath(pathname)}
+          />
+        </Row>
+      </Row>
+
+      <Drawer open={menuOpen} onClose={() => setMenuPath(null)} side="right" size="s" title={nav.menu}>
+        <Column fillWidth gap="24" paddingTop="8">
+          <Column as="nav" aria-label={nav.menu} gap="4">
+            {links.map((link) => {
+              const active = isActive(link.href, link.exact);
+              return (
+                <ToggleButton
+                  key={link.href}
+                  href={link.href}
+                  selected={active}
+                  aria-current={active ? "page" : undefined}
+                  size="l"
+                  fillWidth
+                  horizontal="start"
+                  prefixIcon={link.icon}
+                  label={link.label}
+                />
+              );
+            })}
+          </Column>
+          <Line />
+          <Column gap="8">
+            <Text variant="label-default-s" onBackground="neutral-weak">
+              {nav.language}
+            </Text>
+            {/* Switching language swaps the root layout, which would strand the open
+                drawer's panel in the new page: close it, then switch once it's gone. */}
+            <LanguageSwitch
+              lang={lang}
+              pathname={pathname}
+              label={nav.language}
+              onSwitch={(href) => {
+                setMenuPath(null);
+                window.setTimeout(() => router.push(href), DRAWER_EXIT_MS);
+              }}
+            />
+          </Column>
+          <Button href={`/${lang}/commission`} prefixIcon="wand" fillWidth size="l">
+            {nav.cta}
+          </Button>
+        </Column>
+      </Drawer>
+    </Row>
+  );
+}
+
+type LanguageSwitchProps = {
+  lang: Locale;
+  pathname: string;
+  label: string;
+  /** Takes over navigation when set (the link's default is prevented). */
+  onSwitch?: (href: string) => void;
+};
+
+function LanguageSwitch({ lang, pathname, label, onSwitch }: LanguageSwitchProps) {
+  return (
+    <Row role="group" aria-label={label} gap="2" padding="2" radius="full" border background="surface" vertical="center">
+      <Row paddingLeft="8" paddingRight="4" aria-hidden="true">
+        <Icon name="languages" size="xs" onBackground="neutral-weak" />
+      </Row>
+      {locales.map((locale) => (
+        <ToggleButton
+          key={locale}
+          href={switchLocalePath(pathname, locale)}
+          onClick={(event) => {
+            rememberLocale(locale);
+            if (!onSwitch) return;
+            event.preventDefault();
+            onSwitch(switchLocalePath(pathname, locale));
+          }}
+          selected={locale === lang}
+          aria-current={locale === lang ? "true" : undefined}
+          lang={locale}
+          aria-label={locale === "en" ? "English" : "Español"}
+          size="s"
+          rounded
+          label={locale.toUpperCase()}
+        />
+      ))}
     </Row>
   );
 }

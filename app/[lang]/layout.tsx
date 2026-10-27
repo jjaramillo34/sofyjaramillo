@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Providers } from "@/components/Providers";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { getBio } from "@/lib/content";
 import { hasLocale, locales } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -83,6 +84,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             {children}
           </Column>
           <Footer footer={dict.footer} instagram={bio?.instagram ?? null} email={bio?.email ?? ""} />
+          <ScrollToTop label={dict.nav.backToTop} />
         </Column>
       </Providers>
     </Row>

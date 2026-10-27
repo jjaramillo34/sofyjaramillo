@@ -13,6 +13,9 @@ const es: Dictionary = {
     language: "Idioma",
     skipToContent: "Saltar al contenido",
     menu: "Menú",
+    openMenu: "Abrir menú",
+    cta: "Encargar Pedido",
+    backToTop: "Volver arriba",
   },
   hero: {
     eyebrow: "Artista joven · Ecuador",

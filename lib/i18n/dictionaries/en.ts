@@ -13,6 +13,9 @@ const en = {
     language: "Language",
     skipToContent: "Skip to content",
     menu: "Menu",
+    openMenu: "Open menu",
+    cta: "Request Custom Art",
+    backToTop: "Back to top",
   },
   hero: {
     eyebrow: "Young artist · Ecuador",
