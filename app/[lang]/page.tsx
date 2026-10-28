@@ -1,4 +1,4 @@
-import { Background, Button, Card, Column, Flex, Grid, Icon, Media, Row, Text } from "@once-ui-system/core";
+import { Background, Button, Card, Column, Flex, Grid, Icon, Media, Row, SmartLink, Text } from "@once-ui-system/core";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArtworkThumb } from "@/components/ArtworkThumb";
@@ -12,6 +12,9 @@ import { artworkCategories } from "@/lib/artwork-categories";
 import { getArtworks, getBio } from "@/lib/content";
 import { hasLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+
+/** Sofy's art teacher, credited (and linked) under her quote. */
+const TEACHER = { handle: "@ranipaintec", instagram: "https://www.instagram.com/ranipaintec/" };
 
 const mediumIcons = {
   paintings: "palette",
@@ -250,9 +253,18 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
                   <Text as="blockquote" variant="heading-default-m" onBackground="neutral-strong" margin="0" style={{ fontStyle: "italic" }}>
                     “{dict.studio.quote}”
                   </Text>
-                  <Text as="figcaption" variant="label-default-s" onBackground="neutral-weak">
-                    — {dict.studio.quoteBy}
-                  </Text>
+                  <Row as="figcaption" gap="8" vertical="center" wrap textVariant="label-default-s" onBackground="neutral-weak">
+                    — {dict.studio.quoteBy},
+                    <SmartLink
+                      href={TEACHER.instagram}
+                      prefixIcon="instagram"
+                      unstyled
+                      className="teacher-link"
+                      aria-label={`${dict.studio.teacherLink}: ${TEACHER.handle}`}
+                    >
+                      {TEACHER.handle}
+                    </SmartLink>
+                  </Row>
                 </Column>
               </Reveal>
               <Reveal delay={400}>

@@ -112,6 +112,7 @@ const es: Dictionary = {
     body: "Emily de El cadáver de la novia, pintada a mano en la espalda de una chaqueta de jean, pincelada a pincelada. Tus zapatos, chaquetas y camisetas también pueden contar tu historia.",
     quote: "Miren lo que ha logrado mi alumna a crear. No saben la creatividad y el talento que tiene la Sofi.",
     quoteBy: "Su profe de arte",
+    teacherLink: "Sigue a su profe de arte en Instagram",
     button: "Pinta mi chaqueta",
     videoLabel: "Video: Sofy pintando a Emily de El cadáver de la novia en la espalda de una chaqueta de jean gris.",
     play: "Reproducir video",

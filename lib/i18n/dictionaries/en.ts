@@ -112,6 +112,7 @@ const en = {
     body: "Emily from Corpse Bride, painted by hand on the back of a denim jacket, one brushstroke at a time. Sneakers, jackets and tees can carry your story too.",
     quote: "Look what my student managed to create. You have no idea how much creativity and talent Sofi has.",
     quoteBy: "Her art teacher",
+    teacherLink: "Follow her art teacher on Instagram",
     button: "Paint my jacket",
     videoLabel: "Video: Sofy painting Emily from Corpse Bride on the back of a grey denim jacket.",
     play: "Play video",
