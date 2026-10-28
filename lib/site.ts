@@ -10,3 +10,11 @@ export const PRODUCTION_URL = "https://www.sofyjaramillo.com";
 export function siteUrl(): URL {
   return new URL(process.env.NEXT_PUBLIC_SITE_URL || PRODUCTION_URL);
 }
+
+/**
+ * Commission requests are only accepted when COMMISSIONS_OPEN=true. Until then
+ * /[lang]/commission shows a "coming soon" page and the API refuses requests,
+ * so nobody sends one before notifications are set up. Read at build time for
+ * the page, so changing it on Vercel needs a redeploy.
+ */
+export const commissionsOpen = () => process.env.COMMISSIONS_OPEN === "true";

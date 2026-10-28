@@ -6,6 +6,7 @@ import { hasLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { CommissionRequestModel } from "@/lib/models/CommissionRequest";
 import { notifyNewCommission } from "@/lib/notify";
+import { commissionsOpen } from "@/lib/site";
 import { createCommissionSchema, validateReferenceFiles } from "@/lib/validation/commission";
 
 const TEXT_FIELDS = [
@@ -29,6 +30,13 @@ export type CommissionApiResponse =
   | { ok: false; error: string; fieldErrors?: Record<string, string> };
 
 export async function POST(request: Request) {
+  if (!commissionsOpen()) {
+    return NextResponse.json<CommissionApiResponse>(
+      { ok: false, error: "Commissions are not open yet." },
+      { status: 503 },
+    );
+  }
+
   let formData: FormData;
   try {
     formData = await request.formData();

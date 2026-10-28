@@ -66,6 +66,9 @@ correct them in Keystatic. The biography in `content/bio.yaml` is still placehol
 
 ## Commission requests
 
+The form is off until `COMMISSIONS_OPEN=true` (then redeploy); until then
+`/[lang]/commission` shows a "coming soon" page and the API refuses requests.
+
 Stored in the `commission_requests` collection with `status: pending | reviewed | completed`.
 Review them in MongoDB Atlas (Data Explorer) and update `status` there. Notifications go to
 `COMMISSION_NOTIFY_EMAIL` via Resend and/or `COMMISSION_WEBHOOK_URL`, and are sent after the
