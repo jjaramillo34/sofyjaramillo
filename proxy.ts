@@ -37,6 +37,35 @@ function preferredLocale(request: NextRequest): Locale {
   return ranked.find((entry) => hasLocale(entry.lang))?.lang as Locale | undefined ?? defaultLocale;
 }
 
+/**
+ * Forgiving first path segments, so typed or half-typed addresses land on a
+ * real page instead of the 404: language typos and capitals ("/e", "/ES",
+ * "/español") pick that language ("" = the visitor's preferred one), and page
+ * names people might type in Spanish map to the real routes.
+ */
+const LOCALE_ALIASES: Record<string, Locale | ""> = {
+  e: "",
+  esp: "es",
+  espanol: "es",
+  "español": "es",
+  spanish: "es",
+  eng: "en",
+  english: "en",
+  ingles: "en",
+  "inglés": "en",
+};
+const PAGE_ALIASES: Record<string, string> = {
+  inicio: "",
+  home: "",
+  galeria: "gallery",
+  "galería": "gallery",
+  obras: "gallery",
+  pedidos: "commission",
+  pedido: "commission",
+  encargos: "commission",
+  commissions: "commission",
+};
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasPrefix = locales.some(
@@ -44,7 +73,21 @@ export function proxy(request: NextRequest) {
   );
   if (hasPrefix) return;
 
-  request.nextUrl.pathname = `/${preferredLocale(request)}${pathname === "/" ? "" : pathname}`;
+  const [first = "", ...rest] = pathname.slice(1).split("/");
+  const key = decodeURIComponent(first).toLowerCase();
+
+  // "/ES/gallery", "/e", "/español" → that language, keeping the rest of the path.
+  const typedLocale = hasLocale(key) ? key : LOCALE_ALIASES[key];
+  if (typedLocale !== undefined) {
+    const locale = typedLocale || preferredLocale(request);
+    request.nextUrl.pathname = ["", locale, ...rest].join("/").replace(/\/$/, "");
+    return NextResponse.redirect(request.nextUrl);
+  }
+
+  // "/galeria" → "/es/gallery" (or "/en/gallery" for English visitors).
+  const page = PAGE_ALIASES[key];
+  const tail = page === undefined ? pathname : ["", page, ...rest].join("/").replace(/\/$/, "");
+  request.nextUrl.pathname = `/${preferredLocale(request)}${tail === "/" ? "" : tail}`;
   return NextResponse.redirect(request.nextUrl);
 }
 
